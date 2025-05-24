@@ -1,0 +1,6 @@
+@APITaklimSmart_HostAddress = http://localhost:5117
+
+GET {{APITaklimSmart_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
