@@ -17,5 +17,7 @@ WORKDIR /app
 # Copy hasil build dari stage sebelumnya
 COPY --from=build /app/out ./
 
+EXPOSE 8080
+
 # Jalankan aplikasi
 ENTRYPOINT ["dotnet", "APITaklimSmart.dll"]
