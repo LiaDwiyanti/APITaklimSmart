@@ -80,14 +80,20 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(option =>
+    {
+        option.SwaggerEndpoint("/swagger/swagger.json", "TaklimSmart V1");
+        option.RoutePrefix = "swagger"; // supaya bisa diakses di /swagger
+    });
 }
 
 app.UseHttpsRedirection();
