@@ -91,8 +91,8 @@ if (app.Environment.IsProduction())
     app.UseSwagger();
     app.UseSwaggerUI(option =>
     {
-        option.SwaggerEndpoint("/swagger/swagger.json", "TaklimSmart V1");
-        option.RoutePrefix = "swagger"; // supaya bisa diakses di /swagger
+        option.SwaggerEndpoint("/swagger/v1/swagger.json", "API TaklimSmart V1");
+        option.RoutePrefix = "swagger"; 
     });
 }
 
