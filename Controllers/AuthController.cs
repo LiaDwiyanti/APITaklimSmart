@@ -19,8 +19,9 @@ namespace APITaklimSmart.Controllers
             _lokasiContext = lokasiContext;
             _mapbox = mapbox;
         }
+
         [HttpPost("register")]
-        public IActionResult Register([FromBody] User input)
+        public IActionResult Register([FromBody] Register input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -30,18 +31,36 @@ namespace APITaklimSmart.Controllers
                 return BadRequest("Nomor HP sudah digunakan.");
             }
 
-            var (lat, lon) = _mapbox.GetKordinatLokasi(input.Alamat);
-            if (lat == 0 && lon == 0)
+            double lat = 0, lon = 0;
+            if (input.Latitude.HasValue && input.Longitude.HasValue)
             {
-                return BadRequest("Alamat tidak valid atau tidak dapat ditemukan.");
+                lat = input.Latitude.Value;
+                lon = input.Longitude.Value;
+            }
+            else
+            {
+                var coords = _mapbox.GetKordinatLokasi(input.Alamat);
+                lat = coords.lat;
+                lon = coords.lon;
             }
 
-            input.Password = BCrypt.Net.BCrypt.HashPassword(input.Password);
-            input.User_Role = UserRole.user;
-            input.CreatedAt = DateTime.UtcNow;
-            input.UpdatedAt = DateTime.UtcNow;
+            if (lat == 0 && lon == 0)
+            {
+                return BadRequest("Alamat tidak valid atau tidak dapat ditemukan, dan tidak ada lokasi manual diberikan.");
+            }
 
-            var id = _userContext.RegistUser(input);
+            var user = new User
+            {
+                Username = input.Username,
+                Email = input.Email,
+                No_hp = input.No_hp,
+                Alamat = input.Alamat,
+                Password = BCrypt.Net.BCrypt.HashPassword(input.Password),
+                User_Role = UserRole.user,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             bool lokasiSaved = _lokasiContext.SaveLokasi(new Lokasi
             {
@@ -58,7 +77,7 @@ namespace APITaklimSmart.Controllers
                 return StatusCode(500, "Gagal menyimpan data lokasi.");
             }
 
-            bool isRegistered = _userContext.RegistUser(input);
+            bool isRegistered = _userContext.RegistUser(user);
 
             if (isRegistered)
             {

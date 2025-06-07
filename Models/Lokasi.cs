@@ -15,8 +15,8 @@ namespace APITaklimSmart.Models
         [StringLength(255)]
         public string Alamat { get; set; } = string.Empty;
 
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
 
         [StringLength(255)]
         public string? Deskripsi_Lokasi { get; set; }
