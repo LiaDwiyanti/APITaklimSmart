@@ -29,11 +29,12 @@ namespace APITaklimSmart.Models
                 sessionId = Convert.ToInt32(cmd.ExecuteScalar());
 
                 cmd.Dispose();
-                db.closeConnection();
+                db.CloseConnection();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Gagal membuat sesi login: " + ex.Message);
+                __errorMsg = ex.Message;
+                Console.WriteLine("Gagal membuat sesi login: " + __errorMsg);
             }
 
             return sessionId;
@@ -54,11 +55,12 @@ namespace APITaklimSmart.Models
                 success = affected > 0;
 
                 cmd.Dispose();
-                db.closeConnection();
+                db.CloseConnection();
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Gagal logout sesi: " + ex.Message);
+                __errorMsg = ex.Message;
+                Console.WriteLine("Gagal logout sesi: " + __errorMsg);
             }
 
             return success;
