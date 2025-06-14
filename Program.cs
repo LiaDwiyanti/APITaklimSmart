@@ -116,6 +116,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
         option.SwaggerEndpoint("/swagger/v1/swagger.json", "API TaklimSmart V1");
         option.RoutePrefix = "swagger"; 
     });
+    app.UseHttpsRedirection();
 }
 
 app.UseAuthentication();
