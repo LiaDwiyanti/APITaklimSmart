@@ -62,7 +62,7 @@ namespace APITaklimSmart.Controllers
                 UpdatedAt = DateTime.UtcNow
             };
 
-            bool lokasiSaved = _lokasiContext.SaveLokasi(new Lokasi
+            var lokasi = new Lokasi
             {
                 Nama_Lokasi = "Rumah " + input.Username,
                 Alamat = input.Alamat,
@@ -70,14 +70,9 @@ namespace APITaklimSmart.Controllers
                 Longitude = (decimal)lon,
                 Deskripsi_Lokasi = "Lokasi dari user baru",
                 CreatedAt = DateTime.UtcNow
-            });
+            };
 
-            if (!lokasiSaved)
-            {
-                return StatusCode(500, "Gagal menyimpan data lokasi.");
-            }
-
-            bool isRegistered = _userContext.RegistUser(user);
+            bool isRegistered = _userContext.RegistUser(user, lokasi);
 
             if (isRegistered)
             {
