@@ -60,7 +60,7 @@ namespace APITaklimSmart.Models
                 NpgsqlCommand cmdUser = db.GetNpgsqlCommand(queryUser, true);
                 cmdUser.Parameters.AddWithValue("@username", user.Username);
                 cmdUser.Parameters.AddWithValue("@email", user.Email);
-                cmdUser.Parameters.AddWithValue("@no_hp", user.No_hp);
+                cmdUser.Parameters.AddWithValue("@nohp", user.No_hp);
                 cmdUser.Parameters.AddWithValue("@alamat", user.Alamat);
                 cmdUser.Parameters.AddWithValue("@password", user.Password);
                 cmdUser.Parameters.AddWithValue("@user_role", user.User_Role.ToString());
@@ -96,12 +96,12 @@ namespace APITaklimSmart.Models
         public User getUserByNoHP(string no_hp)
         {
             User user = null;
-            string query = "Select * from users where no_hp = @no_hp";
+            string query = "Select * from users where nohp = @nohp";
             DBHelper db = new DBHelper(this.__constr);
             try
             {
                 NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
-                cmd.Parameters.AddWithValue("@no_hp", no_hp);
+                cmd.Parameters.AddWithValue("@nohp", no_hp);
                 NpgsqlDataReader reader = cmd.ExecuteReader();
                 if(reader.Read())
                 {
