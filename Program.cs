@@ -101,8 +101,8 @@ builder.Services.AddScoped<LokasiContext>(provider =>
 });
 
 builder.Services.AddSingleton<MapBoxService>();
-
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
+builder.Logging.AddConsole();
 
 
 var app = builder.Build();
@@ -123,5 +123,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapControllers();
+
 
 app.Run();
