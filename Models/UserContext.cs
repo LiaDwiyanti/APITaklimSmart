@@ -49,7 +49,7 @@ namespace APITaklimSmart.Models
                                 "VALUES (@username, @email, @nohp, @alamat, @password, @user_role, @is_active, @created_at, @updated_at) ";
 
             string queryLokasi = "INSERT INTO lokasi (nama_lokasi, alamat, latitude, longitude, deskripsi_lokasi, created_at) " +
-                                 "VALUES (@nama_lokasi, @alamat_lokasi, @latitude, @longitude, @deskripsi_lokasi, @created_at_lokasi);";
+                                 "VALUES (@nama_lokasi, @alamat, @latitude, @longitude, @deskripsi_lokasi, @created_at_lokasi);";
 
             DBHelper db = new DBHelper(this.__constr);
             try
@@ -73,7 +73,7 @@ namespace APITaklimSmart.Models
                 // Insert lokasi
                 NpgsqlCommand cmdLokasi = db.GetNpgsqlCommand(queryLokasi, true);
                 cmdLokasi.Parameters.AddWithValue("@nama_lokasi", lokasi.Nama_Lokasi);
-                cmdLokasi.Parameters.AddWithValue("@alamat_lokasi", lokasi.Alamat);
+                cmdLokasi.Parameters.AddWithValue("@alamat", lokasi.Alamat);
                 cmdLokasi.Parameters.AddWithValue("@latitude", lokasi.Latitude);
                 cmdLokasi.Parameters.AddWithValue("@longitude", lokasi.Longitude);
                 cmdLokasi.Parameters.AddWithValue("@deskripsi_lokasi", lokasi.Deskripsi_Lokasi);
