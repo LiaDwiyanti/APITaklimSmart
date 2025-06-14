@@ -86,7 +86,8 @@ namespace APITaklimSmart.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Gagal simpan user dan lokasi: " + ex.Message);
+                __errorMsg = ex.Message;
+                Console.WriteLine("Gagal simpan user dan lokasi: " + __errorMsg);
                 db.RollbackTransaction();
             }
             return result;
@@ -103,6 +104,37 @@ namespace APITaklimSmart.Models
                 cmd.Parameters.AddWithValue("@no_hp", no_hp);
                 NpgsqlDataReader reader = cmd.ExecuteReader();
                 if(reader.Read())
+                {
+                    user = new User()
+                    {
+                        Id_User = int.Parse(reader["id_user"].ToString()),
+                        Username = reader["username"].ToString(),
+                        Email = reader["email"].ToString(),
+                        No_hp = reader["nohp"].ToString(),
+                        Alamat = reader["alamat"].ToString(),
+                    };
+                }
+                cmd.Dispose();
+                db.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                __errorMsg = ex.Message;
+            }
+            return user;
+        }
+
+        public User getUserByUsername(string username)
+        {
+            User user = null;
+            string query = "Select * from users where username = @username";
+            DBHelper db = new DBHelper(this.__constr);
+            try
+            {
+                NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
+                cmd.Parameters.AddWithValue("@username", username);
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
                 {
                     user = new User()
                     {
