@@ -39,16 +39,21 @@ namespace APITaklimSmart.Controllers
             }
 
             double lat = 0, lon = 0;
+            string alamatFinal;
             if (input.Latitude.HasValue && input.Longitude.HasValue)
             {
                 lat = input.Latitude.Value;
                 lon = input.Longitude.Value;
+
+                alamatFinal = _mapbox.GetAlamatDariKoordinat(lat, lon);
             }
             else
             {
                 var coords = _mapbox.GetKordinatLokasi(input.Alamat);
                 lat = coords.lat;
                 lon = coords.lon;
+
+                alamatFinal = input.Alamat;
             }
 
             if (lat == 0 && lon == 0)

@@ -54,7 +54,7 @@ namespace APITaklimSmart.Services
                     var features = geoData.RootElement.GetProperty("features");
                     if (features.GetArrayLength() > 0)
                     {
-                        string alamat = features[0].GetProperty("alamat").GetString();
+                        string alamat = features[0].GetProperty("place_name").GetString();
                         return alamat;
                     }
                 }
