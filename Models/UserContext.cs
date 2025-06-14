@@ -42,38 +42,56 @@ namespace APITaklimSmart.Models
             }
             return listUser;
         }
-        public bool RegistUser(User user)
+        public bool RegistUser(User user, Lokasi lokasi)
         {
             bool result = false;
-            string query = "INSERT INTO users (username, email, nohp, alamat, password, user_role, is_active, created_at, updated_at) " +
-                           "VALUES (@username, @email, @no_hp, @alamat, @password, @user_role, @is_active, @created_at, @updated_at) RETURNING id_user;";
+            string queryUser = "INSERT INTO users (username, email, nohp, alamat, password, user_role, is_active, created_at, updated_at) " +
+                                "VALUES (@username, @email, @nohp, @alamat, @password, @user_role, @is_active, @created_at, @updated_at) ";
+
+            string queryLokasi = "INSERT INTO lokasi (nama_lokasi, alamat, latitude, longitude, deskripsi_lokasi, created_at) " +
+                                 "VALUES (@nama_lokasi, @alamat_lokasi, @latitude, @longitude, @deskripsi_lokasi, @created_at_lokasi);";
+
             DBHelper db = new DBHelper(this.__constr);
             try
             {
-                NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
-                cmd.Parameters.AddWithValue("@username", user.Username);
-                cmd.Parameters.AddWithValue("@email", user.Email);
-                cmd.Parameters.AddWithValue("@no_hp", user.No_hp);
-                cmd.Parameters.AddWithValue("@alamat", user.Alamat);
-                cmd.Parameters.AddWithValue("@password", user.Password);
-                cmd.Parameters.AddWithValue("@user_role", user.User_Role.ToString());
-                cmd.Parameters.AddWithValue("@is_active", user.IsActive);
-                cmd.Parameters.AddWithValue("@created_at", user.CreatedAt);
-                cmd.Parameters.AddWithValue("@updated_at", user.UpdatedAt);
-                
-                int rowsAffected = cmd.ExecuteNonQuery();
-                result = rowsAffected > 0;
+                db.BeginTransaction();
 
-                cmd.Dispose();
-                db.closeConnection();
+                // Insert user
+                NpgsqlCommand cmdUser = db.GetNpgsqlCommand(queryUser, true);
+                cmdUser.Parameters.AddWithValue("@username", user.Username);
+                cmdUser.Parameters.AddWithValue("@email", user.Email);
+                cmdUser.Parameters.AddWithValue("@no_hp", user.No_hp);
+                cmdUser.Parameters.AddWithValue("@alamat", user.Alamat);
+                cmdUser.Parameters.AddWithValue("@password", user.Password);
+                cmdUser.Parameters.AddWithValue("@user_role", user.User_Role.ToString());
+                cmdUser.Parameters.AddWithValue("@is_active", user.IsActive);
+                cmdUser.Parameters.AddWithValue("@created_at", user.CreatedAt);
+                cmdUser.Parameters.AddWithValue("@updated_at", user.UpdatedAt);
+                cmdUser.ExecuteNonQuery();
+                cmdUser.Dispose();
+
+                // Insert lokasi
+                NpgsqlCommand cmdLokasi = db.GetNpgsqlCommand(queryLokasi, true);
+                cmdLokasi.Parameters.AddWithValue("@nama_lokasi", lokasi.Nama_Lokasi);
+                cmdLokasi.Parameters.AddWithValue("@alamat_lokasi", lokasi.Alamat);
+                cmdLokasi.Parameters.AddWithValue("@latitude", lokasi.Latitude);
+                cmdLokasi.Parameters.AddWithValue("@longitude", lokasi.Longitude);
+                cmdLokasi.Parameters.AddWithValue("@deskripsi_lokasi", lokasi.Deskripsi_Lokasi);
+                cmdLokasi.Parameters.AddWithValue("@created_at_lokasi", lokasi.CreatedAt);
+                cmdLokasi.ExecuteNonQuery();
+                cmdLokasi.Dispose();
+
+                db.CommitTransaction();
+                result = true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                __errorMsg = ex.Message;
-                Console.WriteLine("Terjadi kesalahan di registrasi user :" + __errorMsg);
+                Console.WriteLine("Gagal simpan user dan lokasi: " + ex.Message);
+                db.RollbackTransaction();
             }
             return result;
         }
+
         public User getUserByNoHP(string no_hp)
         {
             User user = null;
@@ -96,7 +114,7 @@ namespace APITaklimSmart.Models
                     };
                 }
                 cmd.Dispose();
-                db.closeConnection();
+                db.CloseConnection();
             }
             catch (Exception ex)
             {

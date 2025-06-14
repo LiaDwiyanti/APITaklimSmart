@@ -34,7 +34,7 @@ namespace APITaklimSmart.Models
                 result = rowsAffected > 0;
 
                 cmd.Dispose();
-                db.closeConnection();
+                db.CloseConnection();
             }
             catch (Exception ex)
             {
