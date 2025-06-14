@@ -16,7 +16,7 @@ namespace APITaklimSmart.Models
         public bool SaveLokasi(Lokasi lokasi)
         {
             bool result = false;
-            string query = "INSERT INTO lokasis (nama_lokasi, alamat, latitude, longitude, deskripsi_lokasi, created_at) " +
+            string query = "INSERT INTO lokasi (nama_lokasi, alamat, latitude, longitude, deskripsi_lokasi, created_at) " +
                            "VALUES (@nama_lokasi, @alamat, @latitude, @longitude, @deskripsi_lokasi, @created_at);";
 
             DBHelper db = new DBHelper(__constr);
