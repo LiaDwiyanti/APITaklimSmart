@@ -12,7 +12,7 @@ namespace APITaklimSmart.Models
         public string No_hp { get; set; }
         public string Alamat { get; set; }
 
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
     }
 }

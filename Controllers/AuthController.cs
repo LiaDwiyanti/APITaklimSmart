@@ -38,7 +38,7 @@ namespace APITaklimSmart.Controllers
                 return BadRequest("Nomor HP sudah digunakan.");
             }
 
-            double lat = 0, lon = 0;
+            decimal lat = 0, lon = 0;
             string alamatFinal = input.Alamat;
 
             if (input.Latitude.HasValue && input.Longitude.HasValue)

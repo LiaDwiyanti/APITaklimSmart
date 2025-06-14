@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using System.Text.Json;
 
 namespace APITaklimSmart.Services
@@ -12,7 +13,7 @@ namespace APITaklimSmart.Services
             _accessToken = configuration["MapBoxAccessToken"];
         }
 
-        public (double lat, double lon) GetKordinatLokasi(string alamat)
+        public (decimal lat, decimal lon) GetKordinatLokasi(string alamat)
         {
             string url = $"https://api.mapbox.com/geocoding/v5/mapbox.places/{Uri.EscapeDataString(alamat)}.json?access_token={_accessToken}&limit=1";
 
@@ -27,8 +28,8 @@ namespace APITaklimSmart.Services
                     if (features.GetArrayLength() > 0)
                     {
                         var coords = features[0].GetProperty("geometry").GetProperty("coordinates");
-                        double lon = coords[0].GetDouble();
-                        double lat = coords[1].GetDouble();
+                        decimal lon = (decimal)coords[0].GetDouble();
+                        decimal lat = (decimal)coords[1].GetDouble();
 
                         return (lat, lon);
                     }
@@ -40,9 +41,9 @@ namespace APITaklimSmart.Services
                 return (0, 0);
             }
         }
-        public string GetAlamatDariKoordinat(double latitude, double longitude)
+        public string GetAlamatDariKoordinat(decimal lat, decimal lon)
         {
-            string url = $"https://api.mapbox.com/geocoding/v5/mapbox.places/{longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)},{latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)}.json?access_token={_accessToken}&limit=1";
+            string url = $"https://api.mapbox.com/geocoding/v5/mapbox.places/{lon.ToString(CultureInfo.InvariantCulture)}{lat.ToString(CultureInfo.InvariantCulture)}.json?access_token={_accessToken}&limit=1";;
 
             using (var client = new WebClient())
             {
