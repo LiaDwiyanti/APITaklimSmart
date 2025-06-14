@@ -43,7 +43,7 @@ namespace APITaklimSmart.Services
         }
         public string GetAlamatDariKoordinat(decimal lat, decimal lon)
         {
-            string url = $"https://api.mapbox.com/geocoding/v5/mapbox.places/{lon.ToString(CultureInfo.InvariantCulture)}{lat.ToString(CultureInfo.InvariantCulture)}.json?access_token={_accessToken}&limit=1";;
+            string url = $"https://api.mapbox.com/geocoding/v5/mapbox.places/{lon.ToString(CultureInfo.InvariantCulture)},{lat.ToString(CultureInfo.InvariantCulture)}.json?access_token={_accessToken}&limit=1";
 
             using (var client = new WebClient())
             {
