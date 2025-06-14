@@ -39,26 +39,33 @@ namespace APITaklimSmart.Controllers
             }
 
             double lat = 0, lon = 0;
-            string alamatFinal;
+            string alamatFinal = input.Alamat;
+
             if (input.Latitude.HasValue && input.Longitude.HasValue)
             {
                 lat = input.Latitude.Value;
                 lon = input.Longitude.Value;
 
                 alamatFinal = _mapbox.GetAlamatDariKoordinat(lat, lon);
+                if (string.IsNullOrWhiteSpace(alamatFinal) || alamatFinal == "Alamat tidak ditemukan")
+                {
+                    return BadRequest("Koordinat tidak valid atau tidak ditemukan di peta.");
+                }
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(input.Alamat))
             {
                 var coords = _mapbox.GetKordinatLokasi(input.Alamat);
                 lat = coords.lat;
                 lon = coords.lon;
 
-                alamatFinal = input.Alamat;
+                if (lat == 0 && lon == 0)
+                {
+                    return BadRequest("Alamat tidak dapat ditemukan, mohon isi alamat dengan benar atau pilih di peta.");
+                }
             }
-
-            if (lat == 0 && lon == 0)
+            else
             {
-                return BadRequest("Alamat tidak dapat ditemukan, mohon isi alamat di peta.");
+                return BadRequest("Alamat atau lokasi harus diisi.");
             }
 
             var user = new User
@@ -66,7 +73,7 @@ namespace APITaklimSmart.Controllers
                 Username = input.Username,
                 Email = input.Email,
                 No_hp = input.No_hp,
-                Alamat = input.Alamat,
+                Alamat = alamatFinal,
                 Password = BCrypt.Net.BCrypt.HashPassword(input.Password),
                 User_Role = UserRole.user,
                 IsActive = true,
@@ -77,7 +84,7 @@ namespace APITaklimSmart.Controllers
             var lokasi = new Lokasi
             {
                 Nama_Lokasi = "Rumah " + input.Username,
-                Alamat = input.Alamat,
+                Alamat = alamatFinal,
                 Latitude = (decimal)lat,
                 Longitude = (decimal)lon,
                 Deskripsi_Lokasi = "Lokasi dari user baru",
