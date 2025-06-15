@@ -4,9 +4,10 @@ namespace APITaklimSmart.Models
 {
     public class DBContext : DbContext
     {
-        public DBContext(DbContextOptions<DBContext> options)
-            : base(options)
-        { }
+        public DBContext(DbContextOptions<DBContext> options) : base(options)
+        {  
+        }
+        public DbSet<Penjadwalan> Penjadwalans { get; set; }
 
         //Tambah 
     }
