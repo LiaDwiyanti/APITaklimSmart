@@ -35,7 +35,7 @@ namespace APITaklimSmart.Controllers
             User existingUser = _userContext.getUserByNoHP(input.No_hp);
             if (existingUser != null)
             {
-                return BadRequest("Nomor HP sudah digunakan.");
+                return Conflict(new { success = false, message = "Nomor Handphone sudah pernah digunakan." });
             }
 
             decimal lat = 0, lon = 0;
@@ -49,7 +49,7 @@ namespace APITaklimSmart.Controllers
                 alamatFinal = _mapbox.GetAlamatDariKoordinat(lat, lon);
                 if (string.IsNullOrWhiteSpace(alamatFinal) || alamatFinal == "Alamat tidak ditemukan")
                 {
-                    return BadRequest("Koordinat tidak valid atau tidak ditemukan di peta.");
+                    return BadRequest(new { success = false, message = "Koordinat tidak valid atau tidak ditemukan di peta." });
                 }
             }
             else if (!string.IsNullOrWhiteSpace(input.Alamat))
@@ -60,12 +60,12 @@ namespace APITaklimSmart.Controllers
 
                 if (lat == 0 && lon == 0)
                 {
-                    return BadRequest("Alamat tidak dapat ditemukan, mohon isi alamat dengan benar atau pilih di peta.");
+                    return BadRequest(new { success = false, message = "Alamat tidak dapat ditemukan, mohon pilih alamat di peta." });
                 }
             }
             else
             {
-                return BadRequest("Alamat atau lokasi harus diisi.");
+                return BadRequest(new { success = false, message = "Alamat atau lokasi harus diisi." });
             }
 
             var user = new User
@@ -95,11 +95,11 @@ namespace APITaklimSmart.Controllers
 
             if (isRegistered)
             {
-                return Ok(new { message = "Registrasi berhasil." });
+                return Ok(new { success = true, message = "Registrasi berhasil." });
             }
             else
             {
-                return StatusCode(500, new { message = "Registrasi gagal" });
+                return StatusCode(500, new { success = false, message = "Registrasi gagal. Silakan coba lagi." });
             }
         }
 
@@ -114,7 +114,7 @@ namespace APITaklimSmart.Controllers
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
             {
-                return Unauthorized(new { message = "Username atau password salah" });
+                return Unauthorized(new { success = false, message = "Username atau password salah." });
             }
 
             // Mengambil device info dari header
@@ -124,7 +124,7 @@ namespace APITaklimSmart.Controllers
 
             if (sessionId == 0)
             {
-                return StatusCode(500, new { message = "Gagal menyimpan sesi login" });
+                return StatusCode(500, new { success = false, message = "Gagal menyimpan sesi login." });
             }
 
             JWTHelper jwtHelper = new JWTHelper(_config);
