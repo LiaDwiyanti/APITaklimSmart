@@ -15,6 +15,16 @@
 
 Properties/launchSettings.json
 
+# Logs & results
+*.log
+TestResults/
+*.coverage*
+
+# Environment
+.env
+appsettings.Development.json
+secrets.json
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
