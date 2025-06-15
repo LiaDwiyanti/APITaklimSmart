@@ -17,7 +17,7 @@ namespace APITaklimSmart.Models
         {
             int sessionId = 0;
             string query = "INSERT INTO user_sessions (id_user, login_at, device_info, is_active) " +
-                           "VALUES (@id_user, @login_at, @device_info, TRUE) RETURNING id_session;";
+                           "VALUES (@id_user, @login_at, @device_info, TRUE) RETURNING session_id;";
             DBHelper db = new DBHelper(this.__constr);
             try
             {

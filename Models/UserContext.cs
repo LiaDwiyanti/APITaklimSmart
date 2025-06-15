@@ -46,7 +46,7 @@ namespace APITaklimSmart.Models
         {
             bool result = false;
             string queryUser = "INSERT INTO users (username, email, nohp, alamat, password, user_role, is_active, created_at, updated_at) " +
-                                "VALUES (@username, @email, @nohp, @alamat, @password, @user_role, @is_active, @created_at, @updated_at) ";
+                                "VALUES (@username, @email, @nohp, @alamat, @password, @user_role::user_role, @is_active, @created_at, @updated_at) ";
 
             string queryLokasi = "INSERT INTO lokasi (nama_lokasi, alamat, latitude, longitude, deskripsi_lokasi, created_at) " +
                                  "VALUES (@nama_lokasi, @alamat, @latitude, @longitude, @deskripsi_lokasi, @created_at_lokasi);";
@@ -143,6 +143,7 @@ namespace APITaklimSmart.Models
                         Email = reader["email"].ToString(),
                         No_hp = reader["nohp"].ToString(),
                         Alamat = reader["alamat"].ToString(),
+                        Password = reader["password"].ToString(),
                     };
                 }
                 cmd.Dispose();

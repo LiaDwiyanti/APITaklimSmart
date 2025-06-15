@@ -112,7 +112,7 @@ namespace APITaklimSmart.Controllers
             }
             User user = _userContext.getUserByUsername(input.Username);
 
-            if (user == null || user.Password != input.Password)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
             {
                 return Unauthorized(new { message = "Username atau password salah" });
             }
@@ -140,7 +140,8 @@ namespace APITaklimSmart.Controllers
                     user.Username,
                     user.Email,
                     user.No_hp,
-                    user.Alamat
+                    user.Alamat,
+                    user.Password
                 }
             });
         }
