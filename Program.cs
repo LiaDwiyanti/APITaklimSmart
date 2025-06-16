@@ -82,6 +82,12 @@ builder.Services.AddSingleton<MapBoxService>();
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 builder.Logging.AddConsole();
 
+builder.Services.AddScoped<DokumentasiContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new DokumentasiContext(connString);
+});
 
 var app = builder.Build();
 
@@ -101,6 +107,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapControllers();
-
+app.UseStaticFiles();
 
 app.Run();
