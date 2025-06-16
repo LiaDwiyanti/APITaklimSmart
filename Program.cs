@@ -78,27 +78,6 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
-builder.Services.AddScoped<UserSessionContext>(provider =>
-{
-    var config = provider.GetRequiredService<IConfiguration>();
-    var connString = config.GetConnectionString("DefaultConnection");
-    return new UserSessionContext(connString);
-});
-
-builder.Services.AddScoped<UserContext>(provider =>
-{
-    var config = provider.GetRequiredService<IConfiguration>();
-    var connString = config.GetConnectionString("DefaultConnection");
-    return new UserContext(connString);
-});
-
-builder.Services.AddScoped<LokasiContext>(provider =>
-{
-    var config = provider.GetRequiredService<IConfiguration>();
-    var connString = config.GetConnectionString("DefaultConnection");
-    return new LokasiContext(connString);
-});
-
 builder.Services.AddSingleton<MapBoxService>();
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 builder.Logging.AddConsole();
