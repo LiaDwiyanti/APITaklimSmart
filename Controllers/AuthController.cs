@@ -1,38 +1,35 @@
 ﻿using APITaklimSmart.Helpers;
 using APITaklimSmart.Models;
 using APITaklimSmart.Services;
-using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using static APITaklimSmart.Models.Enums;
 
 namespace APITaklimSmart.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly UserContext _userContext;
-        private readonly UserSessionContext _sessionContext;
-        private readonly LokasiContext _lokasiContext;
+        private readonly DBContext _context;
         private readonly MapBoxService _mapbox;
         private readonly IConfiguration _config;
 
-        public AuthController(UserContext userContext, UserSessionContext sessionContext, LokasiContext lokasiContext, MapBoxService mapbox, IConfiguration config)
+        public AuthController(DBContext context, MapBoxService mapbox, IConfiguration config)
         {
-            _userContext = userContext;
-            _sessionContext = sessionContext;
-            _lokasiContext = lokasiContext;
+            _context = context;
             _mapbox = mapbox;
             _config = config;
         }
 
-        [HttpPost("api/register")]
-        public IActionResult Register([FromBody] Register input)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] Register input)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            User existingUser = _userContext.getUserByNoHP(input.No_hp);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.No_hp == input.No_hp);
             if (existingUser != null)
             {
                 return Conflict(new { success = false, message = "Nomor Handphone sudah pernah digunakan." });
@@ -68,49 +65,59 @@ namespace APITaklimSmart.Controllers
                 return BadRequest(new { success = false, message = "Alamat atau lokasi harus diisi." });
             }
 
-            var user = new User
-            {
-                Username = input.Username,
-                Email = input.Email,
-                No_hp = input.No_hp,
-                Alamat = alamatFinal,
-                Password = BCrypt.Net.BCrypt.HashPassword(input.Password),
-                User_Role = UserRole.user,
-                IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            var lokasi = new Lokasi
+            try
             {
-                Nama_Lokasi = "Rumah " + input.Username,
-                Alamat = alamatFinal,
-                Latitude = (decimal)lat,
-                Longitude = (decimal)lon,
-                Deskripsi_Lokasi = "Lokasi dari user baru",
-                CreatedAt = DateTime.UtcNow
-            };
+                var user = new User
+                {
+                    Username = input.Username,
+                    Email = input.Email,
+                    No_hp = input.No_hp,
+                    Alamat = alamatFinal,
+                    Password = BCrypt.Net.BCrypt.HashPassword(input.Password),
+                    User_Role = UserRole.user,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            bool isRegistered = _userContext.RegistUser(user, lokasi);
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
 
-            if (isRegistered)
-            {
+                var lokasi = new Lokasi
+                {
+                    Nama_Lokasi = "Rumah " + input.Username,
+                    Alamat = alamatFinal,
+                    Latitude = (decimal)lat,
+                    Longitude = (decimal)lon,
+                    Deskripsi_Lokasi = "Lokasi dari user baru",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _context.Lokasis.AddAsync(lokasi);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
                 return Ok(new { success = true, message = "Registrasi berhasil." });
-            }
-            else
+            } catch (Exception ex)
             {
+                Console.WriteLine(ex);
+                await transaction.RollbackAsync();
                 return StatusCode(500, new { success = false, message = "Registrasi gagal. Silakan coba lagi." });
             }
         }
 
-        [HttpPost("api/login")]
-        public IActionResult Login([FromBody]Login input)
+        [HttpPost("login")]
+        public  async Task<IActionResult> Login([FromBody] Login input)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            User user = _userContext.getUserByUsername(input.Username);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == input.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(input.Password, user.Password))
             {
@@ -120,30 +127,83 @@ namespace APITaklimSmart.Controllers
             // Mengambil device info dari header
             string deviceInfo = Request.Headers["User-Agent"].ToString();
 
-            int sessionId = _sessionContext.CreateLoginSession(user.Id_User, deviceInfo);
-
-            if (sessionId == 0)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                return StatusCode(500, new { success = false, message = "Gagal menyimpan sesi login." });
-            }
-
-            JWTHelper jwtHelper = new JWTHelper(_config);
-            var token = jwtHelper.GenerateToken(user);
-
-            return Ok(new
-            {
-                token,
-                session_id = sessionId,
-                user = new
+                var session = new UserSession
                 {
-                    user.Id_User,
-                    user.Username,
-                    user.Email,
-                    user.No_hp,
-                    user.Alamat,
-                    user.Password
+                    Id_User = user.Id_User,
+                    LoginAt = DateTime.UtcNow,
+                    DeviceInfo = deviceInfo
+                };
+
+                await _context.UserSessions.AddAsync(session);
+                await _context.SaveChangesAsync();
+
+                JWTHelper jwtHelper = new JWTHelper(_config);
+                var token = jwtHelper.GenerateToken(user);
+
+                await transaction.CommitAsync();
+
+                return Ok(new
+                {
+                    token,
+                    session_id = session.Id_Session,
+                    user = new
+                    {
+                        user.Id_User,
+                        user.Username,
+                        user.Email,
+                        user.No_hp,
+                        user.Alamat,
+                        user.Password
+                    }
+                });
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { success = false, message = "Login gagal. Silakan coba lagi." });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] int session_id)
+        {
+            var userId = int.Parse(User.FindFirst("id_user").Value);
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var session = await _context.UserSessions
+                    .FirstOrDefaultAsync(s => s.Id_Session == session_id && s.Id_User == userId);
+
+                if (session == null)
+                {
+                    return NotFound(new { success = false, message = "Sesi tidak ditemukan." });
                 }
-            });
+
+                if (session.LogoutAt != null)
+                {
+                    return BadRequest(new { success = false, message = "Sesi sudah logout sebelumnya." });
+                }
+
+                session.LogoutAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { success = true, message = "Logout berhasil." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { success = false, message = "Logout gagal. Silakan coba lagi." });
+            }
         }
     }
 }
