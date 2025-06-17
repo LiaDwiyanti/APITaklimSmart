@@ -22,7 +22,7 @@ namespace APITaklimSmart.Models
         public string Deskripsi_Penjadwalan { get; set; } = string.Empty;
 
         [Required]
-        public string Status_Penjadwalan { get; set; } = string.Empty;
+        public StatusPenjadwalan Status_Penjadwalan { get; set; } = StatusPenjadwalan.Diproses;
 
         [Required]
         public int Created_By { get; set; }
