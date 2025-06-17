@@ -203,7 +203,10 @@ namespace APITaklimSmart.Models
                                 : DateTime.UtcNow,
                             Id_Lokasi = Convert.ToInt32(reader["id_lokasi"]),
                             Deskripsi_Penjadwalan = reader["deskripsi_penjadwalan"]?.ToString(),
-                            Status_Penjadwalan = reader["status_penjadwalan"]?.ToString(),
+                            Status_Penjadwalan = Enum.TryParse<StatusPenjadwalan>(
+                                reader["status_penjadwalan"]?.ToString(),
+                                true,
+                                out var status) ? status : StatusPenjadwalan.Diproses,
                             Created_At = reader["created_at"] != DBNull.Value
                                 ? Convert.ToDateTime(reader["created_at"])
                                 : DateTime.UtcNow,
