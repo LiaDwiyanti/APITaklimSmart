@@ -25,6 +25,8 @@ TestResults/
 appsettings.Development.json
 secrets.json
 
+=======
+>>>>>>> 3133e19e6a2a42381f9f6c232d30b79370b18c18
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
