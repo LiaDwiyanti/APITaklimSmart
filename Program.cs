@@ -89,6 +89,20 @@ builder.Services.AddScoped<DokumentasiContext>(provider =>
     return new DokumentasiContext(connString);
 });
 
+builder.Services.AddScoped<UserContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new UserContext(connString);
+});
+
+builder.Services.AddScoped<UserSessionContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new UserSessionContext(connString);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
