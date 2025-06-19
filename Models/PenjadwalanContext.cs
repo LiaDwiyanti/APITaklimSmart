@@ -6,7 +6,7 @@ namespace APITaklimSmart.Models
     public class PenjadwalanContext
     {
         private string __constr;
-        private string __errorMsg;
+        public string __errorMsg;
 
         public PenjadwalanContext(string pObs)
         {
@@ -87,14 +87,14 @@ namespace APITaklimSmart.Models
             return jadwal;
         }
 
-        public bool CreatePenjadwalan(Penjadwalan jadwal, Riwayat riwayat)
+        public bool CreatePenjadwalan(Penjadwalan jadwal)
         {
             bool result = false;
             string queryJadwal = "INSERT INTO penjadwalan (nama_penjadwalan, tanggal_penjadwalan, waktu_penjadwalan, id_lokasi, deskripsi_penjadwalan, status_penjadwalan, created_by, created_at) " +
-                                "VALUES ( @nama_penjadwalan, @tanggal_penjadwalan, @waktu_penjadwalan, @id_lokasi, @deskripsi_penjadwalan, @status_penjadwalan::status_penjadwalan, @created_by, @created_at) ";
+                                "VALUES ( @nama_penjadwalan, @tanggal_penjadwalan, @waktu_penjadwalan, @id_lokasi, @deskripsi_penjadwalan, @status_penjadwalan::status_penjadwalan, @created_by, @created_at) RETURNING id_penjadwalan";
 
-            string queryRiwayat = "INSERT INTO riwayat (status_lama, status_baru, changed_by, alasan, changed_at) " +
-                                 "VALUES (@status_lama::status_penjadwalan, @status_baru::status_penjadwalan, @changed_by, @alasan, @changed_at);";
+            string queryRiwayat = "INSERT INTO riwayat (id_penjadwalan, status_lama, status_baru, changed_by, alasan, changed_at) " +
+                                 "VALUES (@id_penjadwalan, @status_lama::status_penjadwalan, @status_baru::status_penjadwalan, @changed_by, @alasan, @changed_at);";
 
             DBHelper db = new DBHelper(this.__constr);
             try
@@ -111,16 +111,18 @@ namespace APITaklimSmart.Models
                 cmdJadwal.Parameters.AddWithValue("@status_penjadwalan", jadwal.Status_Penjadwalan.ToString().ToLower());
                 cmdJadwal.Parameters.AddWithValue("@created_by", jadwal.Created_By);
                 cmdJadwal.Parameters.AddWithValue("@created_at", jadwal.Created_At);
-                cmdJadwal.ExecuteNonQuery();
+                int idBaru = Convert.ToInt32(cmdJadwal.ExecuteScalar());
                 cmdJadwal.Dispose();
 
                 // Insert riwayat
                 NpgsqlCommand cmdRiwayat = db.GetNpgsqlCommand(queryRiwayat, true);
-                cmdRiwayat.Parameters.AddWithValue("@status_lama", (object?)riwayat.Status_Lama?.ToString().ToLower() ?? DBNull.Value);
-                cmdRiwayat.Parameters.AddWithValue("@status_baru", riwayat.Status_Baru.ToString().ToLower());
-                cmdRiwayat.Parameters.AddWithValue("@changed_by", riwayat.Changed_By);
-                cmdRiwayat.Parameters.AddWithValue("@alasan", (object?)riwayat.Alasan ?? DBNull.Value);
-                cmdRiwayat.Parameters.AddWithValue("@changed_at", riwayat.Changed_At);
+                cmdRiwayat.Parameters.AddWithValue("@id_penjadwalan", idBaru);
+                cmdRiwayat.Parameters.AddWithValue("@status_lama", DBNull.Value);
+                cmdRiwayat.Parameters.AddWithValue("@status_baru", jadwal.Status_Penjadwalan.ToString().ToLower());
+                cmdRiwayat.Parameters.AddWithValue("@changed_by", jadwal.Created_By);
+                cmdRiwayat.Parameters.AddWithValue("@alasan", DBNull.Value);
+                cmdRiwayat.Parameters.AddWithValue("@changed_at", DateTime.UtcNow);
+
                 cmdRiwayat.ExecuteNonQuery();
                 cmdRiwayat.Dispose();
 

@@ -10,6 +10,7 @@ namespace APITaklimSmart.Controllers
     public class PenjadwalanController : ControllerBase
     {
         private readonly PenjadwalanContext _penjadwalanContext;
+        public string __errorMsg;
         public PenjadwalanController(PenjadwalanContext penjadwalanContext)
         {
             _penjadwalanContext = penjadwalanContext;
@@ -78,16 +79,7 @@ namespace APITaklimSmart.Controllers
                 Created_At = DateTime.UtcNow,
             };
 
-            var riwayat = new Riwayat
-            { 
-                Status_Lama = null,
-                Status_Baru = StatusPenjadwalan.Diproses,
-                Changed_By = userId,
-                Alasan = null,
-                Changed_At = DateTime.UtcNow
-            };
-
-            bool isSuccess = _penjadwalanContext.CreatePenjadwalan(penjadwalan, riwayat);
+            bool isSuccess = _penjadwalanContext.CreatePenjadwalan(penjadwalan);
 
             if (isSuccess)
             {
@@ -101,11 +93,10 @@ namespace APITaklimSmart.Controllers
 
         [HttpPut("edit/{id}")]
         [Authorize(Roles = "admin")]
-        public IActionResult Update(int id, Penjadwalan input)
+        public IActionResult Update(int id, [FromBody] UpdatePenjadwalanRequest input)
         {
             try
             {
-
                 var jadwal = new Penjadwalan
                 {
                     Id_Penjadwalan = id,
