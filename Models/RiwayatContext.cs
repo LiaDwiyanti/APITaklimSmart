@@ -103,5 +103,43 @@ namespace APITaklimSmart.Models
             }
             return riwayat;
         }
+
+        public bool UpdateStatusRiwayat(int id, UpdateRiwayatRequest input)
+        {
+            bool result = false;
+            string updateQuery = "UPDATE riwayat SET status_lama = @status_lama::status_penjadwalan, " +
+                                 "status_baru = @status_baru::status_penjadwalan, changed_by = @changed_by, changed_at = @changed_at " +
+                                 "WHERE id_riwayat = @id_riwayat";
+
+            DBHelper db = new DBHelper(this.__constr);
+            try
+            {
+                var existing = ReadRiwayatById(id);
+                if (existing == null)
+                {
+                    __errorMsg = "Riwayat tidak ditemukan.";
+                    return false;
+                }
+
+                using (var cmdUpdate = db.GetNpgsqlCommand(updateQuery))
+                {
+                    cmdUpdate.Parameters.AddWithValue("@status_lama", existing.Status_Baru.ToString().ToLower());
+                    cmdUpdate.Parameters.AddWithValue("@status_baru", input.Status_Baru.ToString().ToLower());
+                    cmdUpdate.Parameters.AddWithValue("@changed_by", input.Changed_By);
+                    cmdUpdate.Parameters.AddWithValue("@changed_at", input.Changed_At);
+                    cmdUpdate.Parameters.AddWithValue("@id_riwayat", id);
+
+                    int affected = cmdUpdate.ExecuteNonQuery();
+                    result = affected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                __errorMsg = ex.Message;
+                Console.WriteLine("Gagal update status riwayat: " + __errorMsg);
+            }
+
+            return result;
+        }
     }
 }
