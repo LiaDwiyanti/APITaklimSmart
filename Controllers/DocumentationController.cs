@@ -1,5 +1,6 @@
 ﻿using APITaklimSmart.Models;
 using APITaklimSmart.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static APITaklimSmart.Models.Enums;
@@ -15,6 +16,7 @@ namespace APITaklimSmart.Controllers
         }
 
         [HttpPost("dokumentasi/create")]
+        [Authorize(Roles = "admin")]
         public IActionResult TambahDokumentasi([FromBody] Dokumentasi input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -42,6 +44,7 @@ namespace APITaklimSmart.Controllers
         }
 
         [HttpGet("dokumentasi/read")]
+        [Authorize]
         public IActionResult ReadDokumentasi()
         {
             try
@@ -56,6 +59,7 @@ namespace APITaklimSmart.Controllers
         }
 
         [HttpPost("dokumentasi/uploadfile")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -90,6 +94,7 @@ namespace APITaklimSmart.Controllers
         }
 
         [HttpPut("dokumentasi/edit")]
+        [Authorize(Roles = "admin")]
         public IActionResult EditDokumentasi([FromBody] Dokumentasi input)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -102,6 +107,7 @@ namespace APITaklimSmart.Controllers
         }
 
         [HttpDelete("dokumentasi/delete/{id}")]
+        [Authorize(Roles = "admin")]
         public IActionResult DeleteDokumentasi(int id)
         {
             bool result = _dokumentasiContext.DeleteDokumentasi(id);
