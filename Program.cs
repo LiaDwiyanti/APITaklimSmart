@@ -117,6 +117,13 @@ builder.Services.AddScoped<RiwayatContext>(provider =>
     return new RiwayatContext(connString);
 });
 
+builder.Services.AddScoped<LokasiContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new LokasiContext(connString);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

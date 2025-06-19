@@ -10,10 +10,11 @@ namespace APITaklimSmart.Controllers
     public class PenjadwalanController : ControllerBase
     {
         private readonly PenjadwalanContext _penjadwalanContext;
-        public string __errorMsg;
-        public PenjadwalanController(PenjadwalanContext penjadwalanContext)
+        private readonly LokasiContext _lokasiContext;
+        public PenjadwalanController(PenjadwalanContext penjadwalanContext, LokasiContext lokasiContext)
         {
             _penjadwalanContext = penjadwalanContext;
+            _lokasiContext = lokasiContext;
         }
 
         [HttpGet("read")]
@@ -146,6 +147,32 @@ namespace APITaklimSmart.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { status = false, message = "Terjadi kesalahan saat menghapus penjadwalan", error = ex.Message});
+            }
+        }
+
+        [HttpGet("{id}/lokasi")]
+        [Authorize]
+        public IActionResult GetLokasiDariPenjadwalan(int id)
+        {
+            try
+            {
+                var penjadwalan = _penjadwalanContext.ReadPenjadwalanById(id);
+                if (penjadwalan == null)
+                {
+                    return NotFound(new { status = false, message = "Data penjadwalan tidak ditemukan" });
+                }
+
+                var lokasi = _lokasiContext.ReadLokasiById(penjadwalan.Id_Lokasi);
+                if (lokasi == null)
+                {
+                    return NotFound(new { status = false, message = "Lokasi tidak ditemukan" });
+                }
+
+                return Ok(new { status = true, data = lokasi });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = false, message = "Terjadi kesalahan", error = ex.Message });
             }
         }
     }
