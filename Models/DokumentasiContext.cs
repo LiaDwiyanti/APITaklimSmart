@@ -177,56 +177,5 @@ namespace APITaklimSmart.Models
                 return false;
             }
         }
-
-        public List<Penjadwalan> ReadPenjadwalan()
-        {
-            List<Penjadwalan> listPenjadwalan = new List<Penjadwalan>();
-            string query = "SELECT * FROM penjadwalan";
-            DBHelper db = new DBHelper(this.__constr);
-
-            try
-            {
-                using (NpgsqlCommand cmd = db.GetNpgsqlCommand(query))
-                using (NpgsqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        listPenjadwalan.Add(new Penjadwalan()
-                        {
-                            Id_Penjadwalan = Convert.ToInt32(reader["id_penjadwalan"]),
-                            Nama_Penjadwalan = reader["nama_penjadwalan"].ToString(),
-                            Tanggal_Penjadwalan = reader["tanggal_penjadwalan"] != DBNull.Value
-                                ? Convert.ToDateTime(reader["tanggal_penjadwalan"])
-                                : DateTime.UtcNow,
-                            Waktu_Penjadwalan = reader["waktu_penjadwalan"] != DBNull.Value
-                                ? Convert.ToDateTime(reader["waktu_penjadwalan"])
-                                : DateTime.UtcNow,
-                            Id_Lokasi = Convert.ToInt32(reader["id_lokasi"]),
-                            Deskripsi_Penjadwalan = reader["deskripsi_penjadwalan"]?.ToString(),
-                            Status_Penjadwalan = Enum.TryParse<StatusPenjadwalan>(
-                                reader["status_penjadwalan"]?.ToString(),
-                                true,
-                                out var status) ? status : StatusPenjadwalan.Diproses,
-                            Created_At = reader["created_at"] != DBNull.Value
-                                ? Convert.ToDateTime(reader["created_at"])
-                                : DateTime.UtcNow,
-                            Updated_At = reader["updated_at"] != DBNull.Value
-                                ? Convert.ToDateTime(reader["updated_at"])
-                                : DateTime.UtcNow
-                        });
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                __errorMsg = ex.Message;
-                Console.WriteLine("Terjadi kesalahan saat membaca data penjadwalan: " + __errorMsg);
-            }
-
-            db.CloseConnection();
-            return listPenjadwalan;
-        }
-
-
     }
 }

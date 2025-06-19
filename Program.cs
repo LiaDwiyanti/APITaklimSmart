@@ -103,6 +103,13 @@ builder.Services.AddScoped<UserSessionContext>(provider =>
     return new UserSessionContext(connString);
 });
 
+builder.Services.AddScoped<PenjadwalanContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new PenjadwalanContext(connString);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

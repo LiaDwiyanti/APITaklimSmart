@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace APITaklimSmart.Models
 {
@@ -10,10 +11,10 @@ namespace APITaklimSmart.Models
         public string Nama_Penjadwalan { get; set; } = string.Empty;
 
         [Required]
-        public DateTime Tanggal_Penjadwalan { get; set; } = DateTime.UtcNow;
+        public DateOnly Tanggal_Penjadwalan { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
         [Required]
-        public DateTime Waktu_Penjadwalan { get; set; } = DateTime.UtcNow;
+        public TimeSpan Waktu_Penjadwalan { get; set; } = DateTime.UtcNow.TimeOfDay;
 
         [Required]
         public int Id_Lokasi { get; set; }
@@ -28,6 +29,6 @@ namespace APITaklimSmart.Models
         public int Created_By { get; set; }
 
         public DateTime Created_At { get; set; } = DateTime.UtcNow;
-        public DateTime Updated_At { get; set; } = DateTime.UtcNow;
+        public DateTime? Updated_At { get; set; } = DateTime.UtcNow;
     }
 }

@@ -111,19 +111,5 @@ namespace APITaklimSmart.Controllers
                 return StatusCode(500, new { message = "Gagal menghapus data dokumentasi" });
         }
 
-        [HttpGet("penjadwalan/read")]
-        public IActionResult ReadPenjadwalan()
-        {
-            try
-            {
-                var data = _dokumentasiContext.ReadPenjadwalan();
-                return Ok(data);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = ex.Message });
-            }
-        }
-
     }
 }
