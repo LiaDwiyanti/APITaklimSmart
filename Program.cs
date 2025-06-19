@@ -110,6 +110,13 @@ builder.Services.AddScoped<PenjadwalanContext>(provider =>
     return new PenjadwalanContext(connString);
 });
 
+builder.Services.AddScoped<RiwayatContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new RiwayatContext(connString);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
