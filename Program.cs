@@ -1,4 +1,5 @@
 using APITaklimSmart.Models;
+using APITaklimSmart.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Add services to the container.
 
@@ -47,8 +49,6 @@ builder.Services.AddSwaggerGen(
         }
     });
     });
-builder.Services.AddDbContext<DBContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -66,22 +66,49 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+    options.AddPolicy("UserOnly", policy => policy.RequireRole("user"));
 });
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowMobileApp", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
 });
 
+builder.Services.AddSingleton<MapBoxService>();
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
+builder.Logging.AddConsole();
 
+builder.Services.AddScoped<DokumentasiContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new DokumentasiContext(connString);
+});
+
+builder.Services.AddScoped<UserContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new UserContext(connString);
+});
+
+builder.Services.AddScoped<UserSessionContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new UserSessionContext(connString);
+});
+
+builder.Services.AddScoped<PenjadwalanContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new PenjadwalanContext(connString);
+});
 
 var app = builder.Build();
 
@@ -94,12 +121,13 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
         option.SwaggerEndpoint("/swagger/v1/swagger.json", "API TaklimSmart V1");
         option.RoutePrefix = "swagger"; 
     });
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowMobileApp");
+app.UseCors("AllowAll");
 app.MapControllers();
+app.UseStaticFiles();
 
 app.Run();

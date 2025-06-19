@@ -1,89 +1,161 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using APITaklimSmart.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APITaklimSmart.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class PenjadwalanController : ControllerBase
     {
-        private readonly DBContext _context;
-
-        public PenjadwalanController(DBContext context)
+        private readonly PenjadwalanContext _penjadwalanContext;
+        public PenjadwalanController(PenjadwalanContext penjadwalanContext)
         {
-            _context = context;
+            _penjadwalanContext = penjadwalanContext;
         }
 
-        // GET: api/penjadwalan
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Penjadwalan>>> GetAll()
+        [HttpGet("read")]
+        [Authorize]
+        public IActionResult ReadPenjadwalan()
         {
-            return await _context.Penjadwalans.ToListAsync();
+            try
+            {
+                var data = _penjadwalanContext.ReadPenjadwalan();
+                if (data == null)
+                {
+                    return NotFound(new { status = false, message = "Data penjadwalan tidak ditemukan" });
+                }
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
-        // GET: api/penjadwalan/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Penjadwalan>> GetById(int id)
+        [HttpGet("read/{id}")]
+        [Authorize]
+        public ActionResult<Penjadwalan> GetPenjadwalanById(int id)
         {
-            var data = await _context.Penjadwalans.FindAsync(id);
+            try
+            {
+                var data = _penjadwalanContext.ReadPenjadwalanById(id);
 
-            if (data == null)
-                return NotFound();
+                if (data == null)
+                {
+                    return NotFound(new {status = false, message = "Data penjadwalan tidak ditemukan"});
+                }
 
-            return data;
+                return data;
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
-        // POST: api/penjadwalan
-        [HttpPost]
-        public async Task<ActionResult<Penjadwalan>> Create(Penjadwalan item)
+        [HttpPost("create")]
+        [Authorize(Roles = "admin")]
+        public IActionResult TambahJadwal([FromBody] PenjadwalanRequest input)
         {
-            item.Created_At = DateTime.Now;
-            item.Updated_At = DateTime.Now;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new {success = false, message = "Data tidak valid"});
+            }
 
-            _context.Penjadwalans.Add(item);
-            await _context.SaveChangesAsync();
+            int userId = int.Parse(User.FindFirst("id_user")?.Value ?? "0");
 
-            return CreatedAtAction(nameof(GetById), new { id = item.Id_Penjadwalan }, item);
+            var penjadwalan = new Penjadwalan
+            {
+                Nama_Penjadwalan = input.Nama_Penjadwalan,
+                Tanggal_Penjadwalan = input.Tanggal_Penjadwalan,
+                Waktu_Penjadwalan = input.Waktu_Penjadwalan,
+                Id_Lokasi = input.Id_Lokasi,
+                Deskripsi_Penjadwalan = input.Deskripsi_Penjadwalan,
+                Status_Penjadwalan = StatusPenjadwalan.Diproses,
+                Created_By = userId,
+                Created_At = DateTime.UtcNow,
+            };
+
+            var riwayat = new Riwayat
+            { 
+                Status_Lama = null,
+                Status_Baru = StatusPenjadwalan.Diproses,
+                Changed_By = userId,
+                Alasan = null,
+                Changed_At = DateTime.UtcNow
+            };
+
+            bool isSuccess = _penjadwalanContext.CreatePenjadwalan(penjadwalan, riwayat);
+
+            if (isSuccess)
+            {
+                return Ok(new { status = true, message = "Tambah data penjadwalan berhasil." });
+            }
+            else
+            {
+                return StatusCode(500, new { status = false, message = "Gagal menambah data penjadwalan." });
+            }
         }
 
-        // PUT: api/penjadwalan/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Penjadwalan item)
+        [HttpPut("edit/{id}")]
+        [Authorize(Roles = "admin")]
+        public IActionResult Update(int id, Penjadwalan input)
         {
-            if (id != item.Id_Penjadwalan)
-                return BadRequest();
+            try
+            {
 
-            var existing = await _context.Penjadwalans.FindAsync(id);
-            if (existing == null)
-                return NotFound();
+                var jadwal = new Penjadwalan
+                {
+                    Id_Penjadwalan = id,
+                    Nama_Penjadwalan = input.Nama_Penjadwalan,
+                    Tanggal_Penjadwalan = input.Tanggal_Penjadwalan,
+                    Waktu_Penjadwalan = input.Waktu_Penjadwalan,
+                    Id_Lokasi = input.Id_Lokasi,
+                    Deskripsi_Penjadwalan = input.Deskripsi_Penjadwalan,
+                    Status_Penjadwalan = input.Status_Penjadwalan,
+                    Updated_At = DateTime.UtcNow
+                };
 
-            existing.Nama_Penjadwalan = item.Nama_Penjadwalan;
-            existing.Tanggal_Penjadwalan = item.Tanggal_Penjadwalan;
-            existing.Waktu_Penjadwalan = item.Waktu_Penjadwalan;
-            existing.Id_Lokasi = item.Id_Lokasi;
-            existing.Deskripsi_Penjadwalan = item.Deskripsi_Penjadwalan;
-            existing.Status_Penjadwalan = item.Status_Penjadwalan;
-            existing.Created_By = item.Created_By;
-            existing.Updated_At = DateTime.Now;
+                bool isSuccess = _penjadwalanContext.UpdatePenjadwalan(jadwal);
 
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                if (isSuccess)
+                {
+                    return Ok(new { status = true, message = "Penjadwalan berhasil diperbarui" });
+                }
+                else
+                {
+                    return NotFound(new { status = false, message = "Data gagal diperbarui" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = false, message = "Terjadi kesalahan", error = ex.Message });
+            }
         }
 
-        // DELETE: api/penjadwalan/5
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var data = await _context.Penjadwalans.FindAsync(id);
-            if (data == null)
-                return NotFound();
+            try
+            {
+                var success = _penjadwalanContext.DeletePenjadwalanById(id);
 
-            _context.Penjadwalans.Remove(data);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                if (success)
+                {
+                    return Ok(new { status = true, message = "Penjadwalan berhasil dihapus"});
+                }
+                else
+                {
+                    return NotFound(new { status = false, message = "Penjadwalan tidak ditemukan atau sudah dihapus"});
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = false, message = "Terjadi kesalahan saat menghapus penjadwalan", error = ex.Message});
+            }
         }
     }
 }
