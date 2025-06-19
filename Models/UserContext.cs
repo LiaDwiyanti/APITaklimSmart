@@ -123,6 +123,37 @@ namespace APITaklimSmart.Models
             return user;
         }
 
+        public User getUserById(int id)
+        {
+            User user = null;
+            string query = "Select * from users where id_user = @id_user";
+            DBHelper db = new DBHelper(this.__constr);
+            try
+            {
+                NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
+                cmd.Parameters.AddWithValue("@id_user", id);
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    user = new User()
+                    {
+                        Id_User = int.Parse(reader["id_user"].ToString()),
+                        Username = reader["username"].ToString(),
+                        Email = reader["email"].ToString(),
+                        No_hp = reader["nohp"].ToString(),
+                        Alamat = reader["alamat"].ToString(),
+                    };
+                }
+                cmd.Dispose();
+                db.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                __errorMsg = ex.Message;
+            }
+            return user;
+        }
+
         public User getUserByUsername(string username)
         {
             User user = null;
