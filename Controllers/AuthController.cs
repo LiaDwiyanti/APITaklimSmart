@@ -116,8 +116,7 @@ namespace APITaklimSmart.Controllers
                 return BadRequest(new
                 {
                     success = false,
-                    message = "Data tidak valid",
-                    errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    message = "Data tidak valid"
                 });
             }
 
@@ -142,15 +141,18 @@ namespace APITaklimSmart.Controllers
             return Ok(new
             {
                 success = true,
-                token,
-                session_id = sessionId,
-                user = new
-                {
-                    user.Id_User,
-                    user.Username,
-                    user.Email,
-                    user.No_hp,
-                    user.Alamat
+                message = "Login berhasil",
+                data = new {
+                    token,
+                    session_id = sessionId,
+                    user = new
+                    {
+                        user.Id_User,
+                        user.Username,
+                        user.Email,
+                        user.No_hp,
+                        user.Alamat
+                    }
                 }
             });
         }
