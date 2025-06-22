@@ -24,7 +24,7 @@ namespace APITaklimSmart.Controllers
                 {
                     return NotFound(new { status = false, message = "Data riwayat tidak ditemukan" });
                 }
-                return Ok(data);
+                return Ok(new { success = true, data });
             }
             catch (Exception ex)
             {

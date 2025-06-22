@@ -13,6 +13,7 @@ namespace APITaklimSmart.Controllers
             _penjadwalanContext = penjadwalanContext;
             _lokasiContext = lokasiContext;
         }
+
         [HttpGet("lokasi-terdekat")]
         [Authorize]
         public IActionResult GetLokasiTerdekat()
