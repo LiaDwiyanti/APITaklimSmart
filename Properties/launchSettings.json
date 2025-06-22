@@ -16,7 +16,11 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://0.0.0.0:8080",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__DefaultConnection": "Host=metro.proxy.rlwy.net;Port=30119;Username=postgres;Password=yrPTifIfXASTbrhwrBbNLJFZaBziswTf;Database=railway;SSL Mode=Require;Trust Server Certificate=true;Include Error Detail=true;",
+        "Jwt__Issuer": "taklimsmart.com",
+        "Jwt__Key": "A0PLI3KASI_Ta4kli0mSm2art_De5ploy",
+        "MapBoxAccessToken": "pk.eyJ1IjoibGlhZHdpIiwiYSI6ImNtYjV1ZGV2YzFvYXkycW9laHp3M2Q0azMifQ.nTdnqjGgINEPscYcij8I2g"
       }
     },
     "https": {

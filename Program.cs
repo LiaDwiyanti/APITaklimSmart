@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
 
 // Add services to the container.
 
@@ -79,31 +80,51 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
-builder.Services.AddScoped<UserSessionContext>(provider =>
+builder.Services.AddSingleton<MapBoxService>();
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
+builder.Logging.AddConsole();
+
+builder.Services.AddScoped<DokumentasiContext>(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
-    var connString = config.GetConnectionString("DefaultConnection");
-    return new UserSessionContext(connString);
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new DokumentasiContext(connString);
 });
 
 builder.Services.AddScoped<UserContext>(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
-    var connString = config.GetConnectionString("DefaultConnection");
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
     return new UserContext(connString);
+});
+
+builder.Services.AddScoped<UserSessionContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new UserSessionContext(connString);
+});
+
+builder.Services.AddScoped<PenjadwalanContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new PenjadwalanContext(connString);
+});
+
+builder.Services.AddScoped<RiwayatContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new RiwayatContext(connString);
 });
 
 builder.Services.AddScoped<LokasiContext>(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
-    var connString = config.GetConnectionString("DefaultConnection");
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
     return new LokasiContext(connString);
 });
-
-builder.Services.AddSingleton<MapBoxService>();
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
-builder.Logging.AddConsole();
-
 
 var app = builder.Build();
 
@@ -119,10 +140,17 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "uploads")),
+    RequestPath = "/uploads"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapControllers();
-
 
 app.Run();

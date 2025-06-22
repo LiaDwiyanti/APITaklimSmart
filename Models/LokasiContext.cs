@@ -1,48 +1,46 @@
 ﻿using APITaklimSmart.Helpers;
-using Npgsql;
 
 namespace APITaklimSmart.Models
 {
     public class LokasiContext
     {
         private string __constr;
-        private string __errorMsg;
+        public string __errorMsg;
 
         public LokasiContext(string pObs)
         {
             __constr = pObs;
         }
-
-        public bool SaveLokasi(Lokasi lokasi)
+        public Lokasi? ReadLokasiById(int id)
         {
-            bool result = false;
-            string query = "INSERT INTO lokasis (nama_lokasi, alamat, latitude, longitude, deskripsi_lokasi, created_at) " +
-                           "VALUES (@nama_lokasi, @alamat, @latitude, @longitude, @deskripsi_lokasi, @created_at);";
+            Lokasi? lokasi = null;
+            string query = "SELECT * FROM lokasi WHERE id_lokasi = @id";
 
             DBHelper db = new DBHelper(__constr);
             try
             {
                 var cmd = db.GetNpgsqlCommand(query);
-                cmd.Parameters.AddWithValue("@nama_lokasi", lokasi.Nama_Lokasi);
-                cmd.Parameters.AddWithValue("@alamat", lokasi.Alamat);
-                cmd.Parameters.AddWithValue("@latitude", lokasi.Latitude);
-                cmd.Parameters.AddWithValue("@longitude", lokasi.Longitude);
-                cmd.Parameters.AddWithValue("@deskripsi_lokasi", lokasi.Deskripsi_Lokasi ?? "");
-                cmd.Parameters.AddWithValue("@created_at", lokasi.CreatedAt);
+                cmd.Parameters.AddWithValue("@id", id);
+                var reader = cmd.ExecuteReader();
 
-                int rowsAffected = cmd.ExecuteNonQuery();
-                result = rowsAffected > 0;
-
-                cmd.Dispose();
-                db.closeConnection();
+                while (reader.Read())
+                {
+                    lokasi = new Lokasi
+                    {
+                        Id_Lokasi = Convert.ToInt32(reader["id_lokasi"]),
+                        Nama_Lokasi = reader["nama_lokasi"]?.ToString(),
+                        Alamat = reader["alamat"]?.ToString(),
+                        Latitude = reader.GetDecimal(reader.GetOrdinal("latitude")),
+                        Longitude = reader.GetDecimal(reader.GetOrdinal("longitude"))
+                    };
+                }
             }
             catch (Exception ex)
             {
                 __errorMsg = ex.Message;
-                Console.WriteLine("Gagal menyimpan lokasi: " + __errorMsg);
             }
 
-            return result;
+            return lokasi;
         }
     }
 }
