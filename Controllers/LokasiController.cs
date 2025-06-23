@@ -13,6 +13,26 @@ namespace APITaklimSmart.Controllers
             _penjadwalanContext = penjadwalanContext;
             _lokasiContext = lokasiContext;
         }
+
+        [HttpGet("lokasi")]
+        [Authorize]
+        public IActionResult ReadLokasi()
+        {
+            try
+            {
+                var data = _lokasiContext.ReadLokasi();
+                if (data == null)
+                {
+                    return NotFound(new { status = false, message = "Data lokasi tidak ditemukan" });
+                }
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
         [HttpGet("lokasi-terdekat")]
         [Authorize]
         public IActionResult GetLokasiTerdekat()
