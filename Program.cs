@@ -138,10 +138,10 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapControllers();
-app.UseStaticFiles();
 
 app.Run();
