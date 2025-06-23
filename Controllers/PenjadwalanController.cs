@@ -58,7 +58,7 @@ namespace APITaklimSmart.Controllers
 
         [HttpPost("create")]
         [Authorize(Roles = "admin")]
-        public IActionResult TambahJadwal([FromBody] PenjadwalanRequest input)
+        public IActionResult TambahJadwal([FromBody] PenjadwalanRequest jadwal)
         {
             if (!ModelState.IsValid)
             {
@@ -69,11 +69,11 @@ namespace APITaklimSmart.Controllers
 
             var penjadwalan = new Penjadwalan
             {
-                Nama_Penjadwalan = input.Nama_Penjadwalan,
-                Tanggal_Penjadwalan = input.Tanggal_Penjadwalan,
-                Waktu_Penjadwalan = input.Waktu_Penjadwalan,
-                Id_Lokasi = input.Id_Lokasi,
-                Deskripsi_Penjadwalan = input.Deskripsi_Penjadwalan,
+                Nama_Penjadwalan = jadwal.Nama_Penjadwalan,
+                Tanggal_Penjadwalan = jadwal.Tanggal_Penjadwalan,
+                Waktu_Penjadwalan = jadwal.Waktu_Penjadwalan,
+                Id_Lokasi = jadwal.Id_Lokasi,
+                Deskripsi_Penjadwalan = jadwal.Deskripsi_Penjadwalan,
                 Status_Penjadwalan = StatusPenjadwalan.Diproses,
                 Created_By = userId,
                 Created_At = DateTime.UtcNow,
