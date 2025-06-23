@@ -67,7 +67,7 @@ namespace APITaklimSmart.Models
             catch (Exception ex)
             {
                 __errorMsg = ex.Message;
-                Console.WriteLine("Gagal menemukan sesi: " + __errorMsg);
+                Console.WriteLine("Gagal menemukan sesi login : " + __errorMsg);
             }
             return session;
         }
