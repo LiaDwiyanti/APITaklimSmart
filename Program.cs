@@ -110,6 +110,20 @@ builder.Services.AddScoped<PenjadwalanContext>(provider =>
     return new PenjadwalanContext(connString);
 });
 
+builder.Services.AddScoped<RiwayatContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new RiwayatContext(connString);
+});
+
+builder.Services.AddScoped<LokasiContext>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+    return new LokasiContext(connString);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -124,10 +138,10 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapControllers();
-app.UseStaticFiles();
 
 app.Run();

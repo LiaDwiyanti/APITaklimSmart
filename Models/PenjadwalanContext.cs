@@ -202,27 +202,46 @@ namespace APITaklimSmart.Models
             return result;
         }
 
-        public void UpdateStatusDiprosesKeDisetujuiJikaSudahLewat()
+        public Penjadwalan? GetPenjadwalanTerdekat()
         {
+            Penjadwalan? penjadwalan = null;
             string query = @"
-                UPDATE penjadwalan
-                SET status_penjadwalan = 'disetujui',
-                    updated_at = NOW()
-                WHERE status_penjadwalan = 'diproses'
-                AND (tanggal_penjadwalan + waktu_penjadwalan) <= NOW();";
+                SELECT * FROM penjadwalan
+                WHERE (tanggal_penjadwalan + waktu_penjadwalan) >= CURRENT_TIMESTAMP
+                ORDER BY (tanggal_penjadwalan + waktu_penjadwalan) ASC
+                LIMIT 1;
+    ";
 
+            DBHelper db = new DBHelper(this.__constr);
             try
             {
-                DBHelper db = new DBHelper(this.__constr);
-                using var cmd = db.GetNpgsqlCommand(query);
-
-                int affected = cmd.ExecuteNonQuery();
-                Console.WriteLine($"Status 'diproses' -> 'disetujui' otomatis: {affected} jadwal.");
+                var cmd = db.GetNpgsqlCommand(query);
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Enum.TryParse<StatusPenjadwalan>(
+                        reader.GetString(reader.GetOrdinal("status_penjadwalan")),
+                        true,
+                        out StatusPenjadwalan status
+                    );
+                    penjadwalan = new Penjadwalan
+                    {
+                        Id_Penjadwalan = int.Parse(reader["id_penjadwalan"].ToString()),
+                        Nama_Penjadwalan = reader["nama_penjadwalan"].ToString(),
+                        Tanggal_Penjadwalan = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("tanggal_penjadwalan"))),
+                        Waktu_Penjadwalan = reader.GetTimeSpan(reader.GetOrdinal("waktu_penjadwalan")),
+                        Id_Lokasi = int.Parse(reader["id_lokasi"].ToString()),
+                        Deskripsi_Penjadwalan = reader["deskripsi_penjadwalan"].ToString(),
+                        Status_Penjadwalan = status
+                    };
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error UpdateStatusDiprosesKeDisetujuiJikaSudahLewat: " + ex.Message);
+                __errorMsg = ex.Message;
             }
+
+            return penjadwalan;
         }
     }
 }
