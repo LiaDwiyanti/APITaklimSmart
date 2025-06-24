@@ -19,6 +19,8 @@ namespace APITaklimSmart.Controllers
         {
             try
             {
+                _riwayatContext.UpdateStatusDiprosesKeDisetujuiJikaSudahLewat();
+
                 var data = _riwayatContext.ReadRiwayatAll();
                 if (data == null)
                 {

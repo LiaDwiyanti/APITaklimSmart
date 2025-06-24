@@ -15,7 +15,7 @@ namespace APITaklimSmart.Models
         public List<Penjadwalan> ReadPenjadwalan()
         {
             List<Penjadwalan> listPenjadwalan = new List<Penjadwalan>();
-            string query = "select * from penjadwalan";
+            string query = "SELECT * FROM penjadwalan ORDER BY tanggal_penjadwalan + waktu_penjadwalan ASC;";
             DBHelper db = new DBHelper(this.__constr);
             try
             {

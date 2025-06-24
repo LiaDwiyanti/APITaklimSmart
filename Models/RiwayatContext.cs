@@ -141,5 +141,28 @@ namespace APITaklimSmart.Models
 
             return result;
         }
+
+        public void UpdateStatusDiprosesKeDisetujuiJikaSudahLewat()
+        {
+            string query = @"
+                UPDATE penjadwalan
+                SET status_penjadwalan = 'disetujui',
+                    updated_at = NOW()
+                WHERE status_penjadwalan = 'diproses'
+                AND (tanggal_penjadwalan + waktu_penjadwalan) <= NOW();";
+
+            try
+            {
+                DBHelper db = new DBHelper(this.__constr);
+                using var cmd = db.GetNpgsqlCommand(query);
+
+                int affected = cmd.ExecuteNonQuery();
+                Console.WriteLine($"Status 'diproses' -> 'disetujui' otomatis: {affected} jadwal.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error UpdateStatusDiprosesKeDisetujuiJikaSudahLewat: " + ex.Message);
+            }
+        }
     }
 }
